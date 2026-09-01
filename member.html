@@ -1,1 +1,486 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>온보딩 체크리스트</title>
+<style>
+  @font-face { font-family: 'Pretendard'; src: local('Pretendard'); }
 
+  :root {
+    --orange: #FF6A1A;
+    --ink: #1A1A1A;
+    --gray: #8A8A8A;
+    --gray-light: #B7B7B7;
+    --line: #E4E4E4;
+    --card-hover: #FAFAFA;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: #F3F3F1;
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Malgun Gothic', sans-serif;
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .sheet {
+    max-width: 1000px;
+    margin: 0 auto;
+    background: #fff;
+    min-height: 100vh;
+    position: relative;
+  }
+
+  .topbar {
+    height: 8px;
+    background: var(--orange);
+  }
+
+  .toolbar {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 10px 24px 0;
+  }
+  .tool-btn {
+    background: #fff;
+    border: 1px solid var(--line);
+    color: var(--gray);
+    font-size: 11px;
+    padding: 6px 12px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .tool-btn:hover { color: var(--ink); border-color: var(--orange); }
+
+  .header {
+    padding: 22px 32px 18px;
+    position: relative;
+  }
+
+  .corner-label {
+    position: absolute;
+    top: 24px;
+    right: 32px;
+    font-size: 10.5px;
+    color: var(--gray-light);
+    outline: none;
+  }
+
+  h1 {
+    font-size: 26px;
+    font-weight: 800;
+    margin: 0 0 8px;
+    letter-spacing: -0.3px;
+  }
+
+  .subtitle {
+    font-size: 12.5px;
+    color: var(--gray);
+    display: flex;
+    gap: 6px;
+    align-items: baseline;
+    flex-wrap: wrap;
+  }
+  .subtitle .tag {
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .subtitle span[contenteditable] {
+    outline: none;
+    border-bottom: 1px dashed transparent;
+  }
+  .subtitle span[contenteditable]:hover,
+  .subtitle span[contenteditable]:focus {
+    border-bottom: 1px dashed var(--orange);
+  }
+  .sep { color: var(--gray-light); }
+
+  .hr {
+    height: 1px;
+    background: var(--line);
+    margin: 18px 32px 0;
+  }
+
+  .columns {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    padding: 24px 32px 8px;
+  }
+  @media (max-width: 760px) {
+    .columns { grid-template-columns: 1fr; }
+    .col { border-right: none !important; border-bottom: 1px solid var(--line); padding-bottom: 20px !important; margin-bottom: 20px; }
+  }
+
+  .col {
+    padding: 0 20px 20px 0;
+    border-right: 1px solid var(--line);
+    margin-right: 20px;
+  }
+  .col:last-child { border-right: none; margin-right: 0; padding-right: 0; }
+
+  .col-dash {
+    width: 20px;
+    height: 2px;
+    background: var(--orange);
+    margin-bottom: 10px;
+  }
+
+  .col-title {
+    font-size: 16px;
+    font-weight: 800;
+    outline: none;
+    margin-bottom: 3px;
+  }
+
+  .col-sub {
+    font-size: 11px;
+    color: var(--gray-light);
+    margin-bottom: 16px;
+    outline: none;
+  }
+
+  .task {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    margin-bottom: 16px;
+  }
+  .task.done .task-title { text-decoration: line-through; color: var(--gray-light); }
+  .task.done .task-desc { color: var(--gray-light); }
+
+  .checkbox {
+    width: 17px;
+    height: 17px;
+    min-width: 17px;
+    border: 1.5px solid var(--ink);
+    border-radius: 3px;
+    margin-top: 2px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 900;
+    color: var(--orange);
+    user-select: none;
+  }
+
+  .task-body { flex: 1; min-width: 0; }
+  .task-title {
+    font-size: 13.5px;
+    font-weight: 700;
+    margin-bottom: 2px;
+    outline: none;
+  }
+  .task-desc {
+    font-size: 11px;
+    color: var(--gray);
+    line-height: 1.5;
+    outline: none;
+    white-space: pre-wrap;
+  }
+
+  .task-del {
+    background: none;
+    border: none;
+    color: var(--gray-light);
+    font-size: 13px;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+  }
+  .task-del:hover { color: var(--orange); }
+
+  .add-task-btn {
+    background: none;
+    border: 1px dashed var(--line);
+    color: var(--gray-light);
+    font-size: 11px;
+    padding: 6px;
+    border-radius: 6px;
+    cursor: pointer;
+    width: 100%;
+    font-family: inherit;
+  }
+  .add-task-btn:hover { border-color: var(--orange); color: var(--orange); }
+
+  .add-col-btn {
+    display: block;
+    margin: 0 32px 20px;
+    background: none;
+    border: 1px dashed var(--line);
+    color: var(--gray-light);
+    font-size: 11.5px;
+    padding: 8px;
+    border-radius: 7px;
+    cursor: pointer;
+    width: calc(100% - 64px);
+    font-family: inherit;
+  }
+  .add-col-btn:hover { border-color: var(--orange); color: var(--orange); }
+
+  .footer {
+    padding: 16px 32px 26px;
+    border-top: 1px solid var(--line);
+  }
+
+  .contact-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    align-items: baseline;
+    margin-bottom: 12px;
+  }
+  .contact-label {
+    font-size: 12.5px;
+    font-weight: 800;
+  }
+  .contact-item {
+    font-size: 11.5px;
+    color: var(--gray);
+    display: flex;
+    gap: 5px;
+    align-items: baseline;
+  }
+  .contact-item b {
+    color: var(--ink);
+    font-weight: 700;
+    outline: none;
+  }
+  .contact-item span[contenteditable] { outline: none; }
+  .contact-item span[contenteditable]:hover { border-bottom: 1px dashed var(--orange); }
+  .contact-del {
+    background: none; border: none; color: var(--gray-light); cursor: pointer; font-size: 11px; padding: 0;
+  }
+  .contact-del:hover { color: var(--orange); }
+
+  .add-contact-inline {
+    background: none;
+    border: none;
+    color: var(--gray-light);
+    font-size: 11px;
+    cursor: pointer;
+    font-family: inherit;
+    text-decoration: underline dashed;
+  }
+  .add-contact-inline:hover { color: var(--orange); }
+
+  .footnote {
+    font-size: 10px;
+    color: var(--gray-light);
+    line-height: 1.5;
+    outline: none;
+  }
+
+  @media print {
+    body { background: #fff; }
+    .toolbar, .add-task-btn, .add-col-btn, .task-del, .contact-del, .add-contact-inline { display: none !important; }
+    .sheet { max-width: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="sheet">
+  <div class="topbar"></div>
+
+  <div class="toolbar">
+    <button class="tool-btn" onclick="resetChecks()">체크 초기화</button>
+    <button class="tool-btn" onclick="window.print()">인쇄 / PDF</button>
+  </div>
+
+  <div class="header">
+    <div class="corner-label" contenteditable="true">우주사업부 HRBP · HR운영팀</div>
+    <h1 contenteditable="true">온보딩 체크리스트</h1>
+    <div class="subtitle">
+      <span class="tag">신규입사자용</span>
+      <span class="sep">|</span>
+      <span contenteditable="true" data-placeholder="성명">성명</span>
+      <span contenteditable="true" data-placeholder="직급">직급</span>
+      <span contenteditable="true" data-placeholder="팀명">팀명</span>
+    </div>
+  </div>
+
+  <div class="hr"></div>
+
+  <div class="columns" id="columns"></div>
+
+  <button class="add-col-btn" onclick="addColumn()">+ 컬럼(시기 단계) 추가</button>
+
+  <div class="footer">
+    <div class="contact-row" id="contacts"></div>
+    <button class="add-contact-inline" onclick="addContact()">+ 문의처 추가</button>
+    <div class="footnote" contenteditable="true" style="margin-top:12px;">사원증·출입권한·좌석, PC, 초과권한, 좌석, IP는 부서원, HRBP, 유관부서가 사전에 확인합니다. 누락이나 이상이 있으면 각 담당자에게 문의해주세요.</div>
+  </div>
+</div>
+
+<script>
+const initialColumns = [
+  {
+    title: "입사 당일",
+    sub: "첫날",
+    tasks: [
+      { title: "경력입사자 교육 참석", desc: "한화빌딩 4F 세미나룸" },
+      { title: "사원증 수령", desc: "10:50경 인재확보팀 방문 수령" },
+      { title: "HRBP 중식", desc: "" },
+      { title: "PC 수령 및 기본 세팅", desc: "" },
+    ],
+  },
+  {
+    title: "D+1 ~ D+2",
+    sub: "환경 세팅",
+    tasks: [
+      { title: "보안프로그램 설치", desc: "" },
+      { title: "식당 사원증 등록", desc: "관리팀 2층 식당 내 영양사에게 요청" },
+      { title: "좌석·출입·PC 이상 확인", desc: "사물함…" },
+    ],
+  },
+  {
+    title: "첫 주",
+    sub: "사업부 이해",
+    tasks: [
+      { title: "우주사업부 소개 세션 참석", desc: "HRBP 주관 1회\n※ 소개자료 소개자료를 메일로 전달해 드립니다. 자료는 대외비이므로 취급에 유의해 주세요." },
+    ],
+  },
+  {
+    title: "정착기 (몇주차 그런거 언제~)",
+    sub: "업무 루틴",
+    tasks: [
+      { title: "근태 신청 방법 익히기", desc: "근태교육자료 및 매뉴얼 참조" },
+      { title: "초과근무 수당 신청 방법", desc: "근태교육자료 및 매뉴얼 참조" },
+      { title: "맴함신청", desc: "클레버스 지원업무 및 담당자 확인" },
+    ],
+  },
+];
+
+const initialContacts = [
+  { label: "사원증·출입·PC 신청", who: "인재확보팀 000사원" },
+  { label: "좌석·비품·총무", who: "지원팀 000과장" },
+  { label: "PC·보안프로그램", who: "보안팀 000대리" },
+  { label: "IP 신청", who: "부서원 000과장" },
+  { label: "근태·노사협력", who: "노사협력팀 000사원" },
+];
+
+const columnsEl = document.getElementById('columns');
+const contactsEl = document.getElementById('contacts');
+
+function renderTask(task, listEl) {
+  const div = document.createElement('div');
+  div.className = 'task';
+
+  const cb = document.createElement('div');
+  cb.className = 'checkbox';
+  cb.textContent = '';
+  cb.onclick = () => {
+    div.classList.toggle('done');
+    cb.textContent = div.classList.contains('done') ? '✓' : '';
+  };
+
+  const body = document.createElement('div');
+  body.className = 'task-body';
+
+  const title = document.createElement('div');
+  title.className = 'task-title';
+  title.contentEditable = true;
+  title.textContent = task.title;
+
+  const desc = document.createElement('div');
+  desc.className = 'task-desc';
+  desc.contentEditable = true;
+  desc.textContent = task.desc;
+
+  body.appendChild(title);
+  body.appendChild(desc);
+
+  const del = document.createElement('button');
+  del.className = 'task-del';
+  del.textContent = '✕';
+  del.onclick = () => div.remove();
+
+  div.appendChild(cb);
+  div.appendChild(body);
+  div.appendChild(del);
+
+  listEl.appendChild(div);
+}
+
+function renderColumn(col) {
+  const colDiv = document.createElement('div');
+  colDiv.className = 'col';
+
+  const dash = document.createElement('div');
+  dash.className = 'col-dash';
+
+  const title = document.createElement('div');
+  title.className = 'col-title';
+  title.contentEditable = true;
+  title.textContent = col.title;
+
+  const sub = document.createElement('div');
+  sub.className = 'col-sub';
+  sub.contentEditable = true;
+  sub.textContent = col.sub;
+
+  const list = document.createElement('div');
+  list.className = 'task-list';
+
+  colDiv.appendChild(dash);
+  colDiv.appendChild(title);
+  colDiv.appendChild(sub);
+  colDiv.appendChild(list);
+
+  col.tasks.forEach(t => renderTask(t, list));
+
+  const addBtn = document.createElement('button');
+  addBtn.className = 'add-task-btn';
+  addBtn.textContent = '+ 항목 추가';
+  addBtn.onclick = () => renderTask({ title: "새 항목", desc: "설명" }, list);
+  colDiv.appendChild(addBtn);
+
+  columnsEl.appendChild(colDiv);
+}
+
+function renderContact(c) {
+  const div = document.createElement('div');
+  div.className = 'contact-item';
+  const b = document.createElement('b');
+  b.contentEditable = true;
+  b.textContent = c.who;
+  const span = document.createElement('span');
+  span.contentEditable = true;
+  span.textContent = c.label;
+  const del = document.createElement('button');
+  del.className = 'contact-del';
+  del.textContent = '✕';
+  del.onclick = () => div.remove();
+  div.appendChild(span);
+  div.appendChild(b);
+  div.appendChild(del);
+  contactsEl.appendChild(div);
+}
+
+function addColumn() {
+  renderColumn({ title: "새 단계", sub: "설명", tasks: [{ title: "새 항목", desc: "설명" }] });
+}
+function addContact() {
+  renderContact({ label: "문의 내용", who: "담당팀 담당자" });
+}
+function resetChecks() {
+  document.querySelectorAll('.task').forEach(t => {
+    t.classList.remove('done');
+    t.querySelector('.checkbox').textContent = '';
+  });
+}
+
+initialColumns.forEach(renderColumn);
+initialContacts.forEach(renderContact);
+</script>
+
+</body>
+</html>
