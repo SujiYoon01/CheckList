@@ -1,1 +1,461 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>입사 전 업무환경 세팅 체크리스트</title>
+<style>
+  @font-face { font-family: 'Pretendard'; src: local('Pretendard'); }
 
+  :root {
+    --orange: #FF6A1A;
+    --ink: #1A1A1A;
+    --gray: #8A8A8A;
+    --gray-light: #B7B7B7;
+    --line: #E4E4E4;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: #F3F3F1;
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Malgun Gothic', sans-serif;
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .sheet {
+    max-width: 1000px;
+    margin: 0 auto;
+    background: #fff;
+    min-height: 100vh;
+  }
+
+  .topbar { height: 8px; background: var(--orange); }
+
+  .toolbar {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 10px 24px 0;
+  }
+  .tool-btn {
+    background: #fff;
+    border: 1px solid var(--line);
+    color: var(--gray);
+    font-size: 11px;
+    padding: 6px 12px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .tool-btn:hover { color: var(--ink); border-color: var(--orange); }
+
+  .save-toast {
+    font-size: 11px;
+    color: var(--gray-light);
+    align-self: center;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .save-toast.show { opacity: 1; color: var(--orange); }
+
+  .header { padding: 22px 32px 16px; position: relative; }
+
+  .corner-label {
+    position: absolute;
+    top: 24px;
+    right: 32px;
+    font-size: 10.5px;
+    color: var(--gray-light);
+    outline: none;
+  }
+
+  h1 {
+    font-size: 25px;
+    font-weight: 800;
+    margin: 0 0 10px;
+    letter-spacing: -0.3px;
+  }
+
+  .subtitle {
+    font-size: 12.5px;
+    color: var(--gray);
+    line-height: 1.6;
+  }
+  .subtitle .tag {
+    color: var(--orange);
+    font-weight: 800;
+  }
+  .subtitle .sep { color: var(--gray-light); margin: 0 6px; }
+  .subtitle span[contenteditable] { outline: none; }
+  .subtitle span[contenteditable]:hover { border-bottom: 1px dashed var(--orange); }
+
+  .hr { height: 1px; background: var(--line); margin: 16px 32px 0; }
+
+  .table-wrap { padding: 18px 32px 8px; overflow-x: auto; }
+
+  table { width: 100%; border-collapse: collapse; min-width: 640px; }
+
+  thead th {
+    text-align: left;
+    font-size: 11px;
+    color: var(--gray-light);
+    font-weight: 700;
+    padding: 0 10px 10px;
+    border-bottom: 1px solid var(--line);
+  }
+  th.col-check { width: 50px; }
+  th.col-team { width: 130px; }
+  th.col-when { width: 80px; }
+
+  tbody tr { border-bottom: 1px solid var(--line); }
+  tbody tr.done .item-title { text-decoration: line-through; color: var(--gray-light); }
+  tbody tr.done .item-desc { color: var(--gray-light); }
+
+  td { padding: 14px 10px; vertical-align: top; }
+
+  .checkbox {
+    width: 17px;
+    height: 17px;
+    border: 1.5px solid var(--ink);
+    border-radius: 3px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 900;
+    color: var(--orange);
+    user-select: none;
+  }
+  tr.self .checkbox { border-color: var(--orange); }
+
+  .item-title {
+    font-size: 13.5px;
+    font-weight: 700;
+    outline: none;
+  }
+
+  .item-desc {
+    font-size: 11.5px;
+    color: var(--gray);
+    line-height: 1.55;
+    outline: none;
+    white-space: pre-wrap;
+    max-width: 340px;
+  }
+
+  .team {
+    font-size: 12px;
+    font-weight: 700;
+    outline: none;
+  }
+  tr.self .team { color: var(--orange); }
+
+  .when {
+    font-size: 12px;
+    color: var(--gray);
+    outline: none;
+  }
+
+  .row-del {
+    background: none;
+    border: none;
+    color: var(--gray-light);
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .row-del:hover { color: var(--orange); }
+
+  .self-toggle {
+    font-size: 9.5px;
+    color: var(--gray-light);
+    cursor: pointer;
+    text-decoration: underline dashed;
+    display: block;
+    margin-top: 3px;
+  }
+  .self-toggle:hover { color: var(--orange); }
+
+  .add-row-btn {
+    display: block;
+    margin: 12px 32px 20px;
+    background: none;
+    border: 1px dashed var(--line);
+    color: var(--gray-light);
+    font-size: 11.5px;
+    padding: 8px;
+    border-radius: 7px;
+    cursor: pointer;
+    width: calc(100% - 64px);
+    font-family: inherit;
+  }
+  .add-row-btn:hover { border-color: var(--orange); color: var(--orange); }
+
+  .footer { padding: 16px 32px 26px; border-top: 1px solid var(--line); }
+
+  .contact-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    align-items: baseline;
+    margin-bottom: 12px;
+  }
+  .contact-label { font-size: 12.5px; font-weight: 800; }
+  .contact-item { font-size: 11.5px; color: var(--gray); display: flex; gap: 5px; align-items: baseline; }
+  .contact-item b { color: var(--ink); font-weight: 700; outline: none; }
+  .contact-item span[contenteditable] { outline: none; }
+  .contact-item span[contenteditable]:hover { border-bottom: 1px dashed var(--orange); }
+  .contact-del { background: none; border: none; color: var(--gray-light); cursor: pointer; font-size: 11px; padding: 0; }
+  .contact-del:hover { color: var(--orange); }
+
+  .add-contact-inline {
+    background: none; border: none; color: var(--gray-light); font-size: 11px; cursor: pointer;
+    font-family: inherit; text-decoration: underline dashed;
+  }
+  .add-contact-inline:hover { color: var(--orange); }
+
+  .footnote { font-size: 10px; color: var(--gray-light); line-height: 1.5; outline: none; margin-top: 12px; }
+
+  @media print {
+    body { background: #fff; }
+    .toolbar, .add-row-btn, .row-del, .self-toggle, .contact-del, .add-contact-inline, .save-toast { display: none !important; }
+    .sheet { max-width: none; }
+  }
+
+  @media (max-width: 700px) {
+    .item-desc { max-width: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="sheet">
+  <div class="topbar"></div>
+
+  <div class="toolbar">
+    <button class="tool-btn" onclick="resetChecks()">체크 초기화</button>
+    <span id="saveToast" class="save-toast"></span>
+    <button class="tool-btn" onclick="saveState()">저장</button>
+    <button class="tool-btn" onclick="window.print()">인쇄 / PDF</button>
+  </div>
+
+  <div class="header">
+    <div class="corner-label" id="cornerLabel" contenteditable="true">우주사업부 HRBP · HR운영팀</div>
+    <h1 id="pageTitle" contenteditable="true">입사 전 업무환경 세팅 체크리스트</h1>
+    <div class="subtitle">
+      <span class="tag">부서원용</span><span class="sep">|</span><span id="subtitleText" contenteditable="true">신규입사자의 빠른 정착을 지원할 수 있도록 아래 항목을 미리 확인해 주세요.</span>
+    </div>
+  </div>
+
+  <div class="hr"></div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th class="col-check">확인</th>
+          <th>항목</th>
+          <th>내용</th>
+          <th class="col-team">유관부서</th>
+          <th class="col-when">시점</th>
+        </tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+
+  <button class="add-row-btn" onclick="addRow()">+ 항목 추가</button>
+
+  <div class="footer">
+    <div class="contact-row" id="contacts"></div>
+    <button class="add-contact-inline" onclick="addContact()">+ 문의처 추가</button>
+    <div class="footnote" id="footnoteText" contenteditable="true">사원증·출입권한·좌석·PC·IP는 부서원, HRBP, 유관부서가 사전에 확인합니다. 누락이나 이상이 있으면 각 담당자에게 문의해주세요.</div>
+  </div>
+</div>
+
+<script>
+const initialRows = [
+  { self:false, title:"사원증 신청", desc:"신청 완료 여부 확인\n서울 외 사업장은 등기 발송 여부 확인", team:"인재확보팀", when:"입사 전" },
+  { self:true, title:"PC 신청 및 수령", desc:"PC신청 및 수령: 클레버스 전자결재 → 결재작성(하기링크 참조) → IT서비스 → [본사]PC 및 소프트웨어 신청서 결재 후 → PC지원실 수령", team:"부서원 직접", when:"입사 전" },
+  { self:false, title:"출입권한 신청 여부 확인", desc:"근무 사업장 출입권한 신청 완료 여부 확인", team:"인재확보팀", when:"입사 전" },
+  { self:true, title:"좌석 · 책상 · 의자 확인", desc:"부서원이 실물을 한번 더 확인하고, 누락이나 이상이 있을 시 지원팀에 문의", team:"지원팀 / 부서원 직접", when:"D-1" },
+  { self:true, title:"IP 신청", desc:"인재확보팀 안내메일 확인 후 랜시설과 - IP 신청서 작성\n누락되기 쉬우므로 사전 확인 필요", team:"부서원 직접", when:"입사 전" },
+  { self:false, title:"보안프로그램 설치 준비", desc:"설치 가이드 준비 여부 확인", team:"보안팀", when:"입사 당일" },
+];
+
+const initialContacts = [
+  { label: "사원증·출입·PC신청", who: "인재확보팀 000사원" },
+  { label: "좌석·총무", who: "지원팀 000과장" },
+  { label: "보안프로그램", who: "보안팀 000대리" },
+  { label: "온보딩 전반", who: "HRBP 윤수지 사원" },
+];
+
+const rowsEl = document.getElementById('rows');
+const contactsEl = document.getElementById('contacts');
+
+function renderRow(r) {
+  const tr = document.createElement('tr');
+  if (r.self) tr.classList.add('self');
+  if (r.done) tr.classList.add('done');
+
+  const tdCheck = document.createElement('td');
+  const cb = document.createElement('div');
+  cb.className = 'checkbox';
+  cb.textContent = r.done ? '✓' : '';
+  cb.onclick = () => {
+    tr.classList.toggle('done');
+    cb.textContent = tr.classList.contains('done') ? '✓' : '';
+  };
+  tdCheck.appendChild(cb);
+
+  const tdTitle = document.createElement('td');
+  const title = document.createElement('div');
+  title.className = 'item-title';
+  title.contentEditable = true;
+  title.textContent = r.title;
+  tdTitle.appendChild(title);
+
+  const tdDesc = document.createElement('td');
+  const desc = document.createElement('div');
+  desc.className = 'item-desc';
+  desc.contentEditable = true;
+  desc.textContent = r.desc;
+  tdDesc.appendChild(desc);
+
+  const tdTeam = document.createElement('td');
+  const team = document.createElement('div');
+  team.className = 'team';
+  team.contentEditable = true;
+  team.textContent = r.team;
+  const toggle = document.createElement('span');
+  toggle.className = 'self-toggle';
+  toggle.textContent = '강조 전환';
+  toggle.onclick = () => tr.classList.toggle('self');
+  tdTeam.appendChild(team);
+  tdTeam.appendChild(toggle);
+
+  const tdWhen = document.createElement('td');
+  const when = document.createElement('div');
+  when.className = 'when';
+  when.contentEditable = true;
+  when.textContent = r.when;
+  tdWhen.appendChild(when);
+
+  const tdDel = document.createElement('td');
+  const del = document.createElement('button');
+  del.className = 'row-del';
+  del.textContent = '✕';
+  del.onclick = () => tr.remove();
+  tdDel.appendChild(del);
+
+  tr.appendChild(tdCheck);
+  tr.appendChild(tdTitle);
+  tr.appendChild(tdDesc);
+  tr.appendChild(tdTeam);
+  tr.appendChild(tdWhen);
+  tr.appendChild(tdDel);
+
+  rowsEl.appendChild(tr);
+}
+
+function renderContact(c) {
+  const div = document.createElement('div');
+  div.className = 'contact-item';
+  const span = document.createElement('span');
+  span.contentEditable = true;
+  span.textContent = c.label;
+  const b = document.createElement('b');
+  b.contentEditable = true;
+  b.textContent = c.who;
+  const del = document.createElement('button');
+  del.className = 'contact-del';
+  del.textContent = '✕';
+  del.onclick = () => div.remove();
+  div.appendChild(span);
+  div.appendChild(b);
+  div.appendChild(del);
+  contactsEl.appendChild(div);
+}
+
+function addRow() {
+  renderRow({ self:false, title:"새 항목", desc:"설명을 입력하세요", team:"담당팀", when:"시점" });
+}
+function addContact() {
+  renderContact({ label: "문의 내용", who: "담당팀 담당자" });
+}
+function resetChecks() {
+  document.querySelectorAll('tbody tr').forEach(tr => {
+    tr.classList.remove('done');
+    tr.querySelector('.checkbox').textContent = '';
+  });
+}
+
+const STORAGE_KEY = 'hanwha_space_pre_checklist_v1';
+
+function collectState() {
+  const rows = Array.from(document.querySelectorAll('#rows tr')).map(tr => ({
+    self: tr.classList.contains('self'),
+    done: tr.classList.contains('done'),
+    title: tr.querySelector('.item-title').textContent,
+    desc: tr.querySelector('.item-desc').textContent,
+    team: tr.querySelector('.team').textContent,
+    when: tr.querySelector('.when').textContent,
+  }));
+  const contacts = Array.from(document.querySelectorAll('#contacts .contact-item')).map(div => ({
+    label: div.querySelector('span').textContent,
+    who: div.querySelector('b').textContent,
+  }));
+  return {
+    cornerLabel: document.getElementById('cornerLabel').textContent,
+    title: document.getElementById('pageTitle').textContent,
+    subtitle: document.getElementById('subtitleText').textContent,
+    footnote: document.getElementById('footnoteText').textContent,
+    rows, contacts,
+  };
+}
+
+function showToast(msg) {
+  const el = document.getElementById('saveToast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => el.classList.remove('show'), 1800);
+}
+
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(collectState()));
+    showToast('저장되었습니다');
+  } catch (e) {
+    showToast('저장 실패');
+  }
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+const saved = loadState();
+if (saved) {
+  document.getElementById('cornerLabel').textContent = saved.cornerLabel;
+  document.getElementById('pageTitle').textContent = saved.title;
+  document.getElementById('subtitleText').textContent = saved.subtitle;
+  document.getElementById('footnoteText').textContent = saved.footnote;
+  saved.rows.forEach(renderRow);
+  saved.contacts.forEach(renderContact);
+} else {
+  initialRows.forEach(renderRow);
+  initialContacts.forEach(renderContact);
+}
+</script>
+
+</body>
+</html>
