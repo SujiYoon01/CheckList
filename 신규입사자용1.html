@@ -1,1 +1,359 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>온보딩 체크리스트</title>
+<style>
+  @font-face { font-family: 'Pretendard'; src: local('Pretendard'); }
 
+  :root {
+    --orange: #FF6A1A;
+    --ink: #1A1A1A;
+    --gray: #8A8A8A;
+    --gray-light: #B7B7B7;
+    --line: #E4E4E4;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: #F3F3F1;
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Malgun Gothic', sans-serif;
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .sheet {
+    max-width: 1080px;
+    margin: 0 auto;
+    background: #fff;
+    min-height: 100vh;
+  }
+
+  .topbar { height: 8px; background: var(--orange); }
+
+  .toolbar-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    padding: 10px 24px 0;
+  }
+  .toolbar-buttons { display: flex; gap: 6px; }
+  .tool-btn {
+    background: #fff;
+    border: 1px solid var(--line);
+    color: var(--gray);
+    font-size: 11px;
+    padding: 6px 12px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .tool-btn:hover { color: var(--ink); border-color: var(--orange); }
+
+  .save-toast {
+    font-size: 11px;
+    color: var(--orange);
+    opacity: 0;
+    transition: opacity 0.3s;
+    height: 14px;
+  }
+  .save-toast.show { opacity: 1; }
+
+  .header { padding: 22px 32px 18px; position: relative; }
+
+  .corner-label {
+    position: absolute;
+    top: 24px;
+    right: 32px;
+    font-size: 10.5px;
+    color: var(--gray-light);
+  }
+
+  h1 {
+    font-size: 26px;
+    font-weight: 800;
+    margin: 0 0 8px;
+    letter-spacing: -0.3px;
+  }
+
+  .subtitle {
+    font-size: 12.5px;
+    color: var(--gray);
+    display: flex;
+    gap: 6px;
+    align-items: baseline;
+    flex-wrap: wrap;
+  }
+  .subtitle .tag { font-weight: 800; color: var(--orange); }
+  .sep { color: var(--gray-light); }
+
+  .hr { height: 1px; background: var(--line); margin: 18px 32px 0; }
+
+  .columns {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    padding: 24px 32px 8px;
+  }
+  @media (max-width: 760px) {
+    .columns { grid-template-columns: 1fr; }
+    .col { border-right: none !important; border-bottom: 1px solid var(--line); padding-bottom: 20px !important; margin-bottom: 20px; }
+  }
+
+  .col {
+    padding: 0 24px 20px 0;
+    border-right: 1px solid var(--line);
+    margin-right: 24px;
+  }
+  .col:last-child { border-right: none; margin-right: 0; padding-right: 0; }
+
+  .col-dash { width: 20px; height: 2px; background: var(--orange); margin-bottom: 10px; }
+
+  .col-title { font-size: 16px; font-weight: 800; margin-bottom: 3px; }
+  .col-sub { font-size: 11px; color: var(--gray-light); margin-bottom: 16px; }
+
+  .task { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 16px; }
+  .task.done .task-title { text-decoration: line-through; color: var(--gray-light); }
+  .task.done .task-desc { color: var(--gray-light); }
+
+  .checkbox {
+    width: 17px;
+    height: 17px;
+    min-width: 17px;
+    border: 1.5px solid var(--orange);
+    border-radius: 3px;
+    margin-top: 2px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 900;
+    color: var(--orange);
+    user-select: none;
+  }
+
+  .task-body { flex: 1; min-width: 0; }
+  .task-title { font-size: 13.5px; font-weight: 700; margin-bottom: 2px; white-space: nowrap; }
+  .task-desc { font-size: 11px; color: var(--gray); line-height: 1.5; white-space: pre-wrap; }
+
+  .footer { padding: 16px 32px 26px; border-top: 1px solid var(--line); }
+
+  .contact-row { display: flex; flex-wrap: wrap; gap: 22px; align-items: baseline; margin-bottom: 12px; }
+  .contact-item { font-size: 11.5px; color: var(--gray); display: flex; gap: 5px; align-items: baseline; }
+  .contact-item b { color: var(--ink); font-weight: 700; }
+
+  .footnote { font-size: 10px; color: var(--gray-light); line-height: 1.5; }
+
+  @media print {
+    body { background: #fff; }
+    .toolbar-wrap { display: none !important; }
+    .sheet { max-width: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="sheet">
+  <div class="topbar"></div>
+
+  <div class="toolbar-wrap">
+    <div class="toolbar-buttons">
+      <button class="tool-btn" onclick="resetChecks()">체크 초기화</button>
+      <button class="tool-btn" onclick="saveState()">저장</button>
+      <button class="tool-btn" onclick="window.print()">인쇄 / PDF</button>
+    </div>
+    <span id="saveToast" class="save-toast"></span>
+  </div>
+
+  <div class="header">
+    <div class="corner-label">우주사업부 HRBP · HR운영팀</div>
+    <h1>온보딩 체크리스트</h1>
+    <div class="subtitle">
+      <span class="tag">신규입사자용</span>
+      <span class="sep">|</span>
+      <span>아래 항목을 체크하며 하나씩 업무 환경에 적응해 보세요.</span>
+    </div>
+  </div>
+
+  <div class="hr"></div>
+
+  <div class="columns" id="columns"></div>
+
+  <div class="footer">
+    <div class="contact-row" id="contacts"></div>
+    <div class="footnote">확인이 어렵거나 이상이 있으면 각 담당자에게 문의해주세요.</div>
+  </div>
+</div>
+
+<script>
+const columnsData = [
+  {
+    title: "입사 당일",
+    sub: "첫날",
+    tasks: [
+      { title: "경력직 신규입사자 교육 참석", desc: "한화빌딩 4F 세미나실" },
+      { title: "HRBP 중식", desc: "000사장, 000과장, 000사원" },
+    ],
+  },
+  {
+    title: "입사 D+1",
+    sub: "환경 세팅",
+    tasks: [
+      { title: "좌석·출입·PC 이상 확인", desc: "이상 발생시 지원팀, 보안팀 문의" },
+      { title: "법인카드 발급", desc: "클레버스 결재양식" },
+      { title: "명함 신청", desc: "클레버스 지원업무\n총무팀 - 지참" },
+      { title: "프린트 및 스캐너 등록", desc: "신청" },
+      { title: "식당 사원증 등록", desc: "한화빌딩 2F 영양사" },
+      { title: "HVMI 설치", desc: "설명" },
+    ],
+  },
+  {
+    title: "입사 D+7 ~",
+    sub: "사업부 이해",
+    tasks: [
+      { title: "우주사업부 소개 세션 참석", desc: "※ 소개자료는 세션과 함께 드립니다.\n자료는 대외비이므로 취급에 유의해주세요." },
+      { title: "근태 시스템 익히기", desc: "설명" },
+    ],
+  },
+];
+
+const contactsData = [
+  { label: "인재확보팀", who: "김지현 사원" },
+  { label: "지원팀", who: "이민우 과장" },
+  { label: "지원팀", who: "이은주 사원" },
+  { label: "보안팀", who: "이경모 대리" },
+  { label: "노사협력팀", who: "임장현 사원" },
+  { label: "금융팀", who: "조용재 사원" },
+  { label: "회계1팀", who: "김두하 사원" },
+];
+
+const columnsEl = document.getElementById('columns');
+const contactsEl = document.getElementById('contacts');
+const STORAGE_KEY = 'hanwha_space_onboarding_checklist_v1';
+
+function renderTask(task, listEl) {
+  const div = document.createElement('div');
+  div.className = 'task';
+
+  const cb = document.createElement('div');
+  cb.className = 'checkbox';
+  cb.onclick = () => {
+    div.classList.toggle('done');
+    cb.textContent = div.classList.contains('done') ? '✓' : '';
+  };
+
+  const body = document.createElement('div');
+  body.className = 'task-body';
+
+  const title = document.createElement('div');
+  title.className = 'task-title';
+  title.textContent = task.title;
+
+  const desc = document.createElement('div');
+  desc.className = 'task-desc';
+  desc.textContent = task.desc;
+
+  body.appendChild(title);
+  body.appendChild(desc);
+
+  div.appendChild(cb);
+  div.appendChild(body);
+
+  listEl.appendChild(div);
+}
+
+function renderColumn(col) {
+  const colDiv = document.createElement('div');
+  colDiv.className = 'col';
+
+  const dash = document.createElement('div');
+  dash.className = 'col-dash';
+
+  const title = document.createElement('div');
+  title.className = 'col-title';
+  title.textContent = col.title;
+
+  const sub = document.createElement('div');
+  sub.className = 'col-sub';
+  sub.textContent = col.sub;
+
+  const list = document.createElement('div');
+  list.className = 'task-list';
+
+  colDiv.appendChild(dash);
+  colDiv.appendChild(title);
+  colDiv.appendChild(sub);
+  colDiv.appendChild(list);
+
+  col.tasks.forEach(t => renderTask(t, list));
+
+  columnsEl.appendChild(colDiv);
+}
+
+function renderContact(c) {
+  const div = document.createElement('div');
+  div.className = 'contact-item';
+  const span = document.createElement('span');
+  span.textContent = c.label;
+  const b = document.createElement('b');
+  b.textContent = c.who;
+  div.appendChild(span);
+  div.appendChild(b);
+  contactsEl.appendChild(div);
+}
+
+function resetChecks() {
+  document.querySelectorAll('.task').forEach(t => {
+    t.classList.remove('done');
+    t.querySelector('.checkbox').textContent = '';
+  });
+}
+
+function showToast(msg) {
+  const el = document.getElementById('saveToast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => el.classList.remove('show'), 1800);
+}
+
+function saveState() {
+  try {
+    const done = Array.from(document.querySelectorAll('.task')).map(t => t.classList.contains('done'));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(done));
+    showToast('저장되었습니다');
+  } catch (e) {
+    showToast('저장 실패');
+  }
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+columnsData.forEach(renderColumn);
+contactsData.forEach(renderContact);
+
+const savedDone = loadState();
+if (savedDone) {
+  document.querySelectorAll('.task').forEach((t, i) => {
+    if (savedDone[i]) {
+      t.classList.add('done');
+      t.querySelector('.checkbox').textContent = '✓';
+    }
+  });
+}
+</script>
+
+</body>
+</html>
