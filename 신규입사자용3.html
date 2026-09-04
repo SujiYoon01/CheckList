@@ -1,1 +1,516 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>온보딩 체크리스트 (편집용)</title>
+<style>
+  @font-face { font-family: 'Pretendard'; src: local('Pretendard'); }
 
+  :root {
+    --orange: #FF6A1A;
+    --ink: #1A1A1A;
+    --gray: #8A8A8A;
+    --gray-light: #B7B7B7;
+    --line: #E4E4E4;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: #F3F3F1;
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Malgun Gothic', sans-serif;
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .edit-banner {
+    background: #241C12;
+    color: #FFD9B0;
+    font-size: 11px;
+    text-align: center;
+    padding: 6px 10px;
+  }
+
+  .sheet {
+    max-width: 1080px;
+    margin: 0 auto;
+    background: #fff;
+    min-height: 100vh;
+  }
+
+  .topbar { height: 8px; background: var(--orange); }
+
+  .toolbar-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    padding: 10px 24px 0;
+  }
+  .toolbar-buttons { display: flex; gap: 6px; }
+  .tool-btn {
+    background: #fff;
+    border: 1px solid var(--line);
+    color: var(--gray);
+    font-size: 11px;
+    padding: 6px 12px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .tool-btn:hover { color: var(--ink); border-color: var(--orange); }
+
+  .save-toast {
+    font-size: 11px;
+    color: var(--orange);
+    opacity: 0;
+    transition: opacity 0.3s;
+    height: 14px;
+  }
+  .save-toast.show { opacity: 1; }
+
+  .header { padding: 22px 32px 18px; position: relative; }
+
+  .corner-label {
+    position: absolute;
+    top: 24px;
+    right: 32px;
+    font-size: 10.5px;
+    color: var(--gray-light);
+    outline: none;
+  }
+
+  h1 {
+    font-size: 26px;
+    font-weight: 800;
+    margin: 0 0 8px;
+    letter-spacing: -0.3px;
+    outline: none;
+  }
+
+  .subtitle {
+    font-size: 12.5px;
+    color: var(--gray);
+    display: flex;
+    gap: 6px;
+    align-items: baseline;
+    flex-wrap: wrap;
+  }
+  .subtitle .tag { font-weight: 800; color: var(--orange); outline: none; }
+  .sep { color: var(--gray-light); }
+  [contenteditable="true"] { border-radius: 4px; padding: 0 2px; margin: 0 -2px; }
+  [contenteditable="true"]:hover, [contenteditable="true"]:focus { background: rgba(255,106,26,0.08); }
+
+  .hr { height: 1px; background: var(--line); margin: 18px 32px 0; }
+
+  .columns {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    padding: 24px 32px 8px;
+  }
+  @media (max-width: 760px) {
+    .columns { grid-template-columns: 1fr; }
+    .col { border-right: none !important; border-bottom: 1px solid var(--line); padding-bottom: 20px !important; margin-bottom: 20px; }
+  }
+
+  .col {
+    padding: 0 24px 20px 0;
+    border-right: 1px solid var(--line);
+    margin-right: 24px;
+  }
+  .col:last-child { border-right: none; margin-right: 0; padding-right: 0; }
+
+  .col-dash { width: 20px; height: 2px; background: var(--orange); margin-bottom: 10px; }
+
+  .col-title { font-size: 16px; font-weight: 800; margin-bottom: 3px; }
+  .col-sub { font-size: 11px; color: var(--gray-light); margin-bottom: 16px; }
+
+  .task { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 16px; }
+  .task.done .task-title { text-decoration: line-through; color: var(--gray-light); }
+  .task.done .task-desc, .task.done .task-contact { color: var(--gray-light); }
+
+  .checkbox {
+    width: 17px;
+    height: 17px;
+    min-width: 17px;
+    border: 1.5px solid var(--orange);
+    border-radius: 3px;
+    margin-top: 2px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 900;
+    color: var(--orange);
+    user-select: none;
+  }
+
+  .task-body { flex: 1; min-width: 0; }
+  .task-title { font-size: 13.5px; font-weight: 700; margin-bottom: 2px; }
+  .task-desc { font-size: 11px; color: var(--gray); line-height: 1.5; white-space: pre-wrap; }
+  .task-contact { font-size: 10.5px; color: var(--orange); font-weight: 700; margin-top: 3px; }
+  .task-contact .phone { color: var(--gray-light); font-weight: 400; }
+
+  .task-del {
+    background: none;
+    border: none;
+    color: var(--gray-light);
+    font-size: 13px;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+  }
+  .task-del:hover { color: var(--orange); }
+
+  .add-task-btn {
+    background: none;
+    border: 1px dashed var(--line);
+    color: var(--gray-light);
+    font-size: 11px;
+    padding: 6px;
+    border-radius: 6px;
+    cursor: pointer;
+    width: 100%;
+    font-family: inherit;
+  }
+  .add-task-btn:hover { border-color: var(--orange); color: var(--orange); }
+
+  .add-col-btn {
+    display: block;
+    margin: 0 32px 20px;
+    background: none;
+    border: 1px dashed var(--line);
+    color: var(--gray-light);
+    font-size: 11.5px;
+    padding: 8px;
+    border-radius: 7px;
+    cursor: pointer;
+    width: calc(100% - 64px);
+    font-family: inherit;
+  }
+  .add-col-btn:hover { border-color: var(--orange); color: var(--orange); }
+
+  .footer { padding: 16px 32px 26px; border-top: 1px solid var(--line); }
+
+  .contact-row { display: flex; flex-wrap: wrap; gap: 22px; align-items: baseline; margin-bottom: 12px; }
+  .contact-item { font-size: 11.5px; color: var(--gray); display: flex; gap: 5px; align-items: baseline; }
+  .contact-item b { color: var(--ink); font-weight: 700; }
+  .contact-item .phone { color: var(--gray-light); }
+
+  .contact-del { background: none; border: none; color: var(--gray-light); cursor: pointer; font-size: 11px; padding: 0; }
+  .contact-del:hover { color: var(--orange); }
+
+  .add-contact-inline {
+    background: none;
+    border: none;
+    color: var(--gray-light);
+    font-size: 11px;
+    cursor: pointer;
+    font-family: inherit;
+    text-decoration: underline dashed;
+  }
+  .add-contact-inline:hover { color: var(--orange); }
+
+  .footnote { font-size: 10px; color: var(--gray-light); line-height: 1.5; }
+  .footer-label { font-size: 10.5px; color: var(--gray-light); margin-bottom: 8px; }
+
+  @media print {
+    body { background: #fff; }
+    .edit-banner, .toolbar-wrap, .add-task-btn, .add-col-btn, .task-del, .contact-del, .add-contact-inline { display: none !important; }
+    .sheet { max-width: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="edit-banner">편집용 버전 · 관리자 전용 — 배포 시에는 공유용(읽기 전용) 버전을 사용하세요</div>
+
+<div class="sheet">
+  <div class="topbar"></div>
+
+  <div class="toolbar-wrap">
+    <div class="toolbar-buttons">
+      <button class="tool-btn" onclick="resetChecks()">체크 초기화</button>
+      <button class="tool-btn" onclick="saveState()">저장</button>
+      <button class="tool-btn" onclick="window.print()">인쇄 / PDF</button>
+    </div>
+    <span id="saveToast" class="save-toast"></span>
+  </div>
+
+  <div class="header">
+    <div class="corner-label" id="cornerLabel" contenteditable="true">우주사업부 HRBP · HR운영팀</div>
+    <h1 id="pageTitle" contenteditable="true">온보딩 체크리스트</h1>
+    <div class="subtitle">
+      <span class="tag" id="tagText" contenteditable="true">신규입사자용</span>
+      <span class="sep">|</span>
+      <span id="subtitleText" contenteditable="true">항목들을 순서대로 체크하며 업무 환경에 적응해갑니다.</span>
+    </div>
+  </div>
+
+  <div class="hr"></div>
+
+  <div class="columns" id="columns"></div>
+
+  <button class="add-col-btn" onclick="addColumn()">+ 컬럼(시기 단계) 추가</button>
+
+  <div class="footer">
+    <div class="footer-label">전체 담당자 (개별 담당자를 못 찾으셨다면 여기로 문의해 주세요)</div>
+    <div class="contact-row" id="contacts"></div>
+    <button class="add-contact-inline" onclick="addContact()">+ 문의처 추가</button>
+    <div class="footnote" id="footnoteText" contenteditable="true" style="margin-top:12px;">확인이 어렵거나 이상이 있으면 각 담당자에게 문의해주세요.</div>
+  </div>
+</div>
+
+<script>
+const initialColumns = [
+  {
+    title: "입사 당일",
+    sub: "첫날",
+    tasks: [
+      { title: "경력직 신규입사자 교육 참석", desc: "한화빌딩 4F 세미나실", contact: null },
+      { title: "HRBP 중식", desc: "000사장, 000과장, 000사원", contact: null },
+    ],
+  },
+  {
+    title: "입사 D+1",
+    sub: "환경 세팅",
+    tasks: [
+      { title: "좌석·출입·PC 이상 확인", desc: "이상 발생시 지원팀, 보안팀 문의", contact: { team: "지원팀", who: "이민우 과장", phone: "010-0000-0000" } },
+      { title: "법인카드 발급", desc: "클레버스 결재양식", contact: { team: "금융팀", who: "조용재 사원", phone: "010-0000-0000" } },
+      { title: "명함 신청", desc: "클레버스 지원업무\n총무팀 - 지참", contact: { team: "지원팀", who: "이은주 사원", phone: "010-0000-0000" } },
+      { title: "프린트 및 스캐너 등록", desc: "신청", contact: { team: "지원팀", who: "이은주 사원", phone: "010-0000-0000" } },
+      { title: "식당 사원증 등록", desc: "한화빌딩 2F 영양사", contact: { team: "지원팀", who: "이민우 과장", phone: "010-0000-0000" } },
+      { title: "HVMI 설치", desc: "설명", contact: { team: "보안팀", who: "이경모 대리", phone: "010-0000-0000" } },
+    ],
+  },
+  {
+    title: "입사 D+7 ~",
+    sub: "사업부 이해",
+    tasks: [
+      { title: "우주사업부 소개 세션 참석", desc: "※ 소개자료는 메일로 발송드립니다.\n자료는 대외비이므로 취급에 유의해주세요.", contact: null },
+      { title: "근태 시스템 익히기", desc: "설명", contact: { team: "노사협력팀", who: "임장현 사원", phone: "010-0000-0000" } },
+    ],
+  },
+];
+
+const initialContacts = [
+  { label: "인재확보팀", who: "김지현 사원", phone: "010-0000-0000" },
+  { label: "지원팀", who: "이민우 과장", phone: "010-0000-0000" },
+  { label: "지원팀", who: "이은주 사원", phone: "010-0000-0000" },
+  { label: "보안팀", who: "이경모 대리", phone: "010-0000-0000" },
+  { label: "노사협력팀", who: "임장현 사원", phone: "010-0000-0000" },
+  { label: "금융팀", who: "조용재 사원", phone: "010-0000-0000" },
+  { label: "회계1팀", who: "김두하 사원", phone: "010-0000-0000" },
+];
+
+const columnsEl = document.getElementById('columns');
+const contactsEl = document.getElementById('contacts');
+const STORAGE_KEY = 'hanwha_space_onboarding_checklist_editor_v2';
+
+function renderTask(task, listEl) {
+  const div = document.createElement('div');
+  div.className = 'task' + (task.done ? ' done' : '');
+
+  const cb = document.createElement('div');
+  cb.className = 'checkbox';
+  cb.textContent = task.done ? '✓' : '';
+  cb.onclick = () => {
+    div.classList.toggle('done');
+    cb.textContent = div.classList.contains('done') ? '✓' : '';
+  };
+
+  const body = document.createElement('div');
+  body.className = 'task-body';
+
+  const title = document.createElement('div');
+  title.className = 'task-title';
+  title.contentEditable = true;
+  title.textContent = task.title;
+
+  const desc = document.createElement('div');
+  desc.className = 'task-desc';
+  desc.contentEditable = true;
+  desc.textContent = task.desc;
+
+  body.appendChild(title);
+  body.appendChild(desc);
+
+  if (task.contact) {
+    const contact = document.createElement('div');
+    contact.className = 'task-contact';
+    const teamWho = document.createElement('span');
+    teamWho.contentEditable = true;
+    teamWho.textContent = task.contact.team + ' ' + task.contact.who;
+    const phone = document.createElement('span');
+    phone.className = 'phone';
+    phone.contentEditable = true;
+    phone.textContent = ' · ' + task.contact.phone;
+    contact.appendChild(teamWho);
+    contact.appendChild(phone);
+    body.appendChild(contact);
+  }
+
+  const del = document.createElement('button');
+  del.className = 'task-del';
+  del.textContent = '✕';
+  del.onclick = () => div.remove();
+
+  div.appendChild(cb);
+  div.appendChild(body);
+  div.appendChild(del);
+
+  listEl.appendChild(div);
+}
+
+function renderColumn(col) {
+  const colDiv = document.createElement('div');
+  colDiv.className = 'col';
+
+  const dash = document.createElement('div');
+  dash.className = 'col-dash';
+
+  const title = document.createElement('div');
+  title.className = 'col-title';
+  title.contentEditable = true;
+  title.textContent = col.title;
+
+  const sub = document.createElement('div');
+  sub.className = 'col-sub';
+  sub.contentEditable = true;
+  sub.textContent = col.sub;
+
+  const list = document.createElement('div');
+  list.className = 'task-list';
+
+  colDiv.appendChild(dash);
+  colDiv.appendChild(title);
+  colDiv.appendChild(sub);
+  colDiv.appendChild(list);
+
+  col.tasks.forEach(t => renderTask(t, list));
+
+  const addBtn = document.createElement('button');
+  addBtn.className = 'add-task-btn';
+  addBtn.textContent = '+ 항목 추가';
+  addBtn.onclick = () => renderTask({ title: "새 항목", desc: "설명", contact: { team: "담당팀", who: "담당자", phone: "010-0000-0000" } }, list);
+  colDiv.appendChild(addBtn);
+
+  columnsEl.appendChild(colDiv);
+}
+
+function renderContact(c) {
+  const div = document.createElement('div');
+  div.className = 'contact-item';
+  const span = document.createElement('span');
+  span.contentEditable = true;
+  span.textContent = c.label;
+  const b = document.createElement('b');
+  b.contentEditable = true;
+  b.textContent = c.who;
+  const phone = document.createElement('span');
+  phone.className = 'phone';
+  phone.contentEditable = true;
+  phone.textContent = '· ' + c.phone;
+  const del = document.createElement('button');
+  del.className = 'contact-del';
+  del.textContent = '✕';
+  del.onclick = () => div.remove();
+  div.appendChild(span);
+  div.appendChild(b);
+  div.appendChild(phone);
+  div.appendChild(del);
+  contactsEl.appendChild(div);
+}
+
+function addColumn() {
+  renderColumn({ title: "새 단계", sub: "설명", tasks: [{ title: "새 항목", desc: "설명", contact: null }] });
+}
+function addContact() {
+  renderContact({ label: "문의 내용", who: "담당팀 담당자", phone: "010-0000-0000" });
+}
+function resetChecks() {
+  document.querySelectorAll('.task').forEach(t => {
+    t.classList.remove('done');
+    t.querySelector('.checkbox').textContent = '';
+  });
+}
+
+function showToast(msg) {
+  const el = document.getElementById('saveToast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => el.classList.remove('show'), 1800);
+}
+
+function collectState() {
+  const columns = Array.from(document.querySelectorAll('#columns .col')).map(colDiv => ({
+    title: colDiv.querySelector('.col-title').textContent,
+    sub: colDiv.querySelector('.col-sub').textContent,
+    tasks: Array.from(colDiv.querySelectorAll('.task')).map(t => {
+      const contactEl = t.querySelector('.task-contact');
+      return {
+        title: t.querySelector('.task-title').textContent,
+        desc: t.querySelector('.task-desc').textContent,
+        done: t.classList.contains('done'),
+        contactText: contactEl ? contactEl.textContent : null,
+      };
+    }),
+  }));
+  const contacts = Array.from(document.querySelectorAll('#contacts .contact-item')).map(div => ({
+    label: div.querySelector('span').textContent,
+    who: div.querySelector('b').textContent,
+    phone: div.querySelector('.phone').textContent,
+  }));
+  return {
+    cornerLabel: document.getElementById('cornerLabel').textContent,
+    title: document.getElementById('pageTitle').textContent,
+    tag: document.getElementById('tagText').textContent,
+    subtitle: document.getElementById('subtitleText').textContent,
+    footnote: document.getElementById('footnoteText').textContent,
+    columns, contacts,
+  };
+}
+
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(collectState()));
+    showToast('저장되었습니다');
+  } catch (e) {
+    showToast('저장 실패');
+  }
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+const saved = loadState();
+if (saved) {
+  document.getElementById('cornerLabel').textContent = saved.cornerLabel;
+  document.getElementById('pageTitle').textContent = saved.title;
+  document.getElementById('tagText').textContent = saved.tag;
+  document.getElementById('subtitleText').textContent = saved.subtitle;
+  document.getElementById('footnoteText').textContent = saved.footnote;
+  saved.columns.forEach(col => {
+    const rebuilt = { title: col.title, sub: col.sub, tasks: col.tasks.map(t => ({ title: t.title, desc: t.desc, done: t.done, contact: null })) };
+    renderColumn(rebuilt);
+  });
+  saved.contacts.forEach(c => renderContact({ label: c.label, who: c.who, phone: c.phone.replace(/^·\s*/, '') }));
+} else {
+  initialColumns.forEach(renderColumn);
+  initialContacts.forEach(renderContact);
+}
+</script>
+
+</body>
+</html>
