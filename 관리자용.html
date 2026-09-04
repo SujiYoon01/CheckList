@@ -1,1 +1,324 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>영업 경력입사자 Onboarding 진척도 체크리스트</title>
+<style>
+  :root{
+    --navy:#1a2332;
+    --navy-light:#2c3a52;
+    --orange:#ff6b35;
+    --orange-light:#ffe4d6;
+    --gray:#8a94a6;
+    --line:#e5e8ee;
+    --bg:#f7f8fa;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:"Pretendard","Noto Sans KR","Malgun Gothic",sans-serif;
+    background:var(--bg);
+    color:var(--navy);
+    padding:32px 16px 60px;
+  }
+  .wrap{max-width:860px;margin:0 auto;}
 
+  /* Header */
+  header{text-align:center;margin-bottom:28px;}
+  header h1{font-size:22px;font-weight:800;margin:0 0 6px;}
+  header p{font-size:13px;color:var(--gray);margin:0;}
+
+  /* Progress gauge */
+  .gauge-card{
+    background:var(--navy);
+    border-radius:16px;
+    padding:22px 24px;
+    color:#fff;
+    margin-bottom:28px;
+  }
+  .gauge-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;}
+  .gauge-top .label{font-size:13px;color:#c2c9d6;font-weight:600;}
+  .gauge-top .pct{font-size:26px;font-weight:800;color:var(--orange);}
+  .gauge-bar-bg{
+    width:100%;height:12px;border-radius:8px;
+    background:rgba(255,255,255,0.12);
+    overflow:hidden;
+  }
+  .gauge-bar-fill{
+    height:100%;border-radius:8px;
+    background:linear-gradient(90deg,#ff6b35,#ff9466);
+    width:0%;
+    transition:width .35s ease;
+  }
+  .gauge-sub{display:flex;justify-content:space-between;margin-top:10px;font-size:12px;color:#8f9ab0;}
+
+  /* Phase flow (connected nodes) */
+  .flow{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:32px;
+    position:relative;
+  }
+  .flow-line{
+    position:absolute;
+    top:20px;left:40px;right:40px;
+    height:3px;
+    background:var(--line);
+    z-index:0;
+  }
+  .flow-line-fill{
+    position:absolute;top:0;left:0;height:100%;
+    background:var(--orange);
+    width:0%;
+    transition:width .35s ease;
+  }
+  .flow-node{
+    position:relative;z-index:1;
+    display:flex;flex-direction:column;align-items:center;
+    flex:1;
+  }
+  .flow-dot{
+    width:42px;height:42px;border-radius:50%;
+    background:#fff;border:3px solid var(--line);
+    display:flex;align-items:center;justify-content:center;
+    font-weight:800;font-size:14px;color:var(--gray);
+    transition:.25s;
+  }
+  .flow-dot.done{border-color:var(--orange);background:var(--orange);color:#fff;}
+  .flow-dot.active{border-color:var(--orange);color:var(--orange);}
+  .flow-name{margin-top:8px;font-size:12.5px;font-weight:700;text-align:center;color:var(--navy);}
+  .flow-pct{font-size:11px;color:var(--gray);margin-top:2px;}
+
+  /* Phase section */
+  .phase{
+    background:#fff;
+    border-radius:14px;
+    border:1px solid var(--line);
+    margin-bottom:20px;
+    overflow:hidden;
+  }
+  .phase-head{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:16px 20px;
+    background:var(--navy);
+    color:#fff;
+  }
+  .phase-head .title{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:700;}
+  .phase-head .badge{
+    width:26px;height:26px;border-radius:50%;
+    background:var(--orange);
+    display:flex;align-items:center;justify-content:center;
+    font-size:13px;font-weight:800;
+  }
+  .phase-head .count{font-size:12.5px;color:#c2c9d6;}
+
+  .item{
+    display:flex;align-items:flex-start;gap:12px;
+    padding:14px 20px;
+    border-top:1px solid var(--line);
+  }
+  .item:first-of-type{border-top:none;}
+  .item input[type=checkbox]{
+    appearance:none;-webkit-appearance:none;
+    width:20px;height:20px;min-width:20px;
+    border:2px solid var(--gray);border-radius:6px;
+    margin-top:2px;cursor:pointer;position:relative;
+    transition:.2s;
+  }
+  .item input[type=checkbox]:checked{
+    background:var(--orange);border-color:var(--orange);
+  }
+  .item input[type=checkbox]:checked::after{
+    content:"";position:absolute;left:6px;top:2px;
+    width:5px;height:10px;
+    border:solid white;border-width:0 2px 2px 0;
+    transform:rotate(45deg);
+  }
+  .item-body{flex:1;}
+  .item-title{font-size:14px;font-weight:700;color:var(--navy);}
+  .item-title.checked{color:var(--gray);text-decoration:line-through;}
+  .item-time{
+    display:inline-block;margin-top:4px;
+    font-size:11.5px;color:var(--orange);
+    background:var(--orange-light);
+    padding:2px 8px;border-radius:20px;font-weight:600;
+  }
+  .item-desc{font-size:12.5px;color:var(--gray);margin-top:6px;line-height:1.5;}
+
+  footer{
+    text-align:center;margin-top:24px;
+    font-size:11.5px;color:var(--gray);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>영업 경력입사자 Onboarding 진척도 체크리스트</h1>
+    <p>관리자(리더·파트장·버디) 배부용 · 입사일 기준 3개월 內 진행상황 확인</p>
+  </header>
+
+  <div class="gauge-card">
+    <div class="gauge-top">
+      <span class="label">전체 진척도</span>
+      <span class="pct" id="totalPct">0%</span>
+    </div>
+    <div class="gauge-bar-bg"><div class="gauge-bar-fill" id="totalBar"></div></div>
+    <div class="gauge-sub">
+      <span id="totalCount">0 / 0 완료</span>
+      <span>대상자: _________ / 부서: _________</span>
+    </div>
+  </div>
+
+  <div class="flow">
+    <div class="flow-line"><div class="flow-line-fill" id="flowFill"></div></div>
+    <div class="flow-node">
+      <div class="flow-dot" id="dot1">1</div>
+      <div class="flow-name">Pre-boarding</div>
+      <div class="flow-pct" id="p1pct">0%</div>
+    </div>
+    <div class="flow-node">
+      <div class="flow-dot" id="dot2">2</div>
+      <div class="flow-name">Onboarding Part1<br>조직 정착·적응</div>
+      <div class="flow-pct" id="p2pct">0%</div>
+    </div>
+    <div class="flow-node">
+      <div class="flow-dot" id="dot3">3</div>
+      <div class="flow-name">Onboarding Part2<br>영업 직무 특화</div>
+      <div class="flow-pct" id="p3pct">0%</div>
+    </div>
+  </div>
+
+  <!-- Phase 1 -->
+  <div class="phase" data-phase="1">
+    <div class="phase-head">
+      <div class="title"><span class="badge">1</span>[Pre-boarding] 업무 환경 적기 구축</div>
+      <div class="count phase-count">0/1</div>
+    </div>
+    <div class="item">
+      <input type="checkbox">
+      <div class="item-body">
+        <div class="item-title">업무 환경 구축 체크리스트 공동 점검</div>
+        <span class="item-time">입사 확정 후 ~ 입사 1주일</span>
+        <div class="item-desc">체크리스트(첨부1)를 신규입사자·부서원(리더·버디 등)에게 공동 배포, 입사 전 준비사항 상호 점검 완료 여부 확인</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phase 2 -->
+  <div class="phase" data-phase="2">
+    <div class="phase-head">
+      <div class="title"><span class="badge">2</span>[Onboarding] Part1 조직 정착·적응 지원</div>
+      <div class="count phase-count">0/5</div>
+    </div>
+    <div class="item">
+      <input type="checkbox">
+      <div class="item-body">
+        <div class="item-title">리더 커피챗</div>
+        <span class="item-time">입사 후 7일 이내</span>
+        <div class="item-desc">Vision Board 기반 상위 임원과의 커피챗 진행, 사업부 비전 공유 및 기대 역할 주지</div>
+      </div>
+    </div>
+    <div class="item">
+      <input type="checkbox">
+      <div class="item-body">
+        <div class="item-title">사업부 Site 교육</div>
+        <span class="item-time">입사 1개월차</span>
+        <div class="item-desc">각 사업부 Site 투어 및 부서 R&amp;R·업무 현황 소개 (팀장 불가 시 파트장 대참 필수)</div>
+      </div>
+    </div>
+    <div class="item">
+      <input type="checkbox">
+      <div class="item-body">
+        <div class="item-title">신규 입사자 네트워킹 활동 (1회차)</div>
+        <span class="item-time">입사 2개월차</span>
+        <div class="item-desc">사업부 경력 입사자 4인 1조 구성, 네트워킹 식사 진행</div>
+      </div>
+    </div>
+    <div class="item">
+      <input type="checkbox">
+      <div class="item-body">
+        <div class="item-title">신규 입사자 네트워킹 활동 (2회차)</div>
+        <span class="item-time">입사 3개월차</span>
+        <div class="item-desc">사업부 경력 입사자 4인 1조 구성, 네트워킹 식사 진행</div>
+      </div>
+    </div>
+    <div class="item">
+      <input type="checkbox">
+      <div class="item-body">
+        <div class="item-title">버디 제도 / Observer Period 운영</div>
+        <span class="item-time">입사일로부터 3개월간 / 1개월차</span>
+        <div class="item-desc">동일부서 버디 지정·활동 및 사업부 주간회의 필수 참관 진행 여부 확인</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phase 3 -->
+  <div class="phase" data-phase="3">
+    <div class="phase-head">
+      <div class="title"><span class="badge">3</span>[Onboarding] Part2 영업 직무 특화 교육</div>
+      <div class="count phase-count">0/2</div>
+    </div>
+    <div class="item">
+      <input type="checkbox">
+      <div class="item-body">
+        <div class="item-title">직무 특화 교육 기본과정</div>
+        <span class="item-time">입사 후 2개월 이내</span>
+        <div class="item-desc">직무·제품·재무 영역별 교육 이수 완료</div>
+      </div>
+    </div>
+    <div class="item">
+      <input type="checkbox">
+      <div class="item-body">
+        <div class="item-title">직무 특화 교육 심화과정</div>
+        <span class="item-time">입사 후 최대 3개월 이내</span>
+        <div class="item-desc">고객→영업사원 역할 전환 마인드셋 및 영업 스킬 함양 커리큘럼(Role Play 포함) 이수 완료</div>
+      </div>
+    </div>
+  </div>
+
+  <footer>본 체크리스트는 관리자(리더·부서장)가 대상자와 함께 진척도를 점검하는 용도로 사용됩니다.</footer>
+</div>
+
+<script>
+function update(){
+  const phases = document.querySelectorAll('.phase');
+  let totalChecked = 0, totalItems = 0;
+  const phasePct = [];
+
+  phases.forEach((phase, idx)=>{
+    const boxes = phase.querySelectorAll('input[type=checkbox]');
+    const checked = phase.querySelectorAll('input[type=checkbox]:checked').length;
+    const pct = Math.round((checked/boxes.length)*100);
+    phasePct.push(pct);
+
+    phase.querySelector('.phase-count').textContent = checked+'/'+boxes.length;
+    totalChecked += checked; totalItems += boxes.length;
+
+    document.getElementById('p'+(idx+1)+'pct').textContent = pct+'%';
+    const dot = document.getElementById('dot'+(idx+1));
+    dot.classList.remove('done','active');
+    if(pct===100) dot.classList.add('done');
+    else if(pct>0) dot.classList.add('active');
+  });
+
+  const totalPct = Math.round((totalChecked/totalItems)*100);
+  document.getElementById('totalPct').textContent = totalPct+'%';
+  document.getElementById('totalBar').style.width = totalPct+'%';
+  document.getElementById('totalCount').textContent = totalChecked+' / '+totalItems+' 완료';
+  document.getElementById('flowFill').style.width = totalPct+'%';
+}
+
+document.querySelectorAll('input[type=checkbox]').forEach(cb=>{
+  cb.addEventListener('change', e=>{
+    const titleEl = e.target.closest('.item').querySelector('.item-title');
+    titleEl.classList.toggle('checked', e.target.checked);
+    update();
+  });
+});
+update();
+</script>
+</body>
+</html>
